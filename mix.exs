@@ -22,7 +22,7 @@ defmodule RosettaHomeRadioThermostat.Mixfile do
     [
       {:radio_thermostat, github: "NationalAssociationOfRealtors/radio_thermostat"},
       {:ssdp, "~> 0.1.2"},
-      {:rosetta_home, github: "rosetta-home/cicada", branch: "dependency"},
+      {:cicada, github: "rosetta-home/cicada", branch: "dependency"},
     ]
   end
 end
