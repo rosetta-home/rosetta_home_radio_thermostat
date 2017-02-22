@@ -1,8 +1,8 @@
-defmodule DeviceManager.Device.HVAC.RadioThermostat do
+defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   use GenServer
   require Logger
-
-  @behaviour DeviceManager.Behaviour.HVAC
+  alias Cicada.{DeviceManager}
+  @behaviour Cicada.DeviceManager.Behaviour.HVAC
 
   def start_link(id, %{device: %{device_type: "com.marvell.wm.system:1.0"}} = device) do
     GenServer.start_link(__MODULE__, {id, device}, name: id)
@@ -158,10 +158,10 @@ defmodule DeviceManager.Device.HVAC.RadioThermostat do
 
 end
 
-defmodule DeviceManager.Discovery.HVAC.RadioThermostat do
-  use DeviceManager.Discovery
+defmodule Cicada.DeviceManager.Discovery.HVAC.RadioThermostat do
+  use Cicada.DeviceManager.Discovery
   require Logger
-  alias DeviceManager.Device.HVAC
+  alias Cicada.DeviceManager.Device.HVAC
 
   defmodule EventHandler do
     use GenEvent

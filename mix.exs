@@ -10,19 +10,15 @@ defmodule RosettaHomeRadioThermostat.Mixfile do
      deps: deps()]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger, :radio_thermostat, :ssdp]]
+    [extra_applications: [:logger, :radio_thermostat, :ssdp, :cicada]]
   end
 
   defp deps do
     [
       {:radio_thermostat, github: "NationalAssociationOfRealtors/radio_thermostat"},
       {:ssdp, "~> 0.1.2"},
-      {:cicada, github: "rosetta-home/cicada", branch: "dependency"},
+      {:cicada, github: "rosetta-home/cicada", optional: true},
     ]
   end
 end
