@@ -1,5 +1,5 @@
 defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
-  use GenServer
+  use Cicada.DeviceManager.DeviceHistogram
   require Logger
   alias Cicada.{DeviceManager}
   @behaviour Cicada.DeviceManager.Behaviour.HVAC
