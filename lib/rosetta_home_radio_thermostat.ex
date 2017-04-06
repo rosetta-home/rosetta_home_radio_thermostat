@@ -181,11 +181,11 @@ defmodule Cicada.DeviceManager.Discovery.HVAC.RadioThermostat do
   def register_callbacks do
     Logger.info "Starting RadioThermostat Listener"
     SSDP.Client.add_handler(EventHandler)
-    {:ok, []}
+    HVAC.RadioThermostat
   end
 
   def handle_info(device, state) do
-    {:noreply, handle_device(device, HVAC.RadioThermostat, state)}
+    {:noreply, handle_device(device, state)}
   end
 
 end
