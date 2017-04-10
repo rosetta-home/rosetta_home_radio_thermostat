@@ -97,12 +97,12 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
       RadioThermostat.state(device.device_pid) |> map_state
     }
     Process.send_after(self(), :update_state, 60000)
-    device |> DeviceManager.Client.dispatch
+    device |> DeviceManager.dispatch
     {:noreply, device}
   end
 
   def handle_info(:broadcast_state, device) do
-    device |> DeviceManager.Client.dispatch
+    device |> DeviceManager.dispatch
     Process.send_after(self(), :broadcast_state, 1000)
     {:noreply, device}
   end
