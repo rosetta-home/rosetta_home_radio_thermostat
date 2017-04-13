@@ -163,34 +163,23 @@ defmodule Cicada.DeviceManager.Discovery.HVAC.RadioThermostat do
   require Logger
   alias Cicada.DeviceManager.Device.HVAC
 
-  defmodule EventHandler do
-    use GenEvent
-    require Logger
-
-    def handle_event({:device, %{device: %{device_type: "com.marvell.wm.system:1.0"}} = device}, parent) do
-      send(parent, device)
-      {:ok, parent}
-    end
-
-    def handle_event(_device, parent) do
-      {:ok, parent}
-    end
-
-  end
-
   def register_callbacks do
     Logger.info "Starting RadioThermostat Listener"
-    Process.send_after(self(), :register, 100)
+    Process.send_after(self(), :register, 0)
     HVAC.RadioThermostat
   end
 
   def handle_info(:register, state) do
-    SSDP.Client.add_handler(EventHandler)
+    SSDP.register()
     {:noreply, state}
   end
 
-  def handle_info(device, state) do
+  def handle_info({:device, %{device: %{device_type: "com.marvell.wm.system:1.0"}} = device}, state) do
     {:noreply, handle_device(device, state)}
+  end
+
+  def handle_info({:device, device}, state) do
+    {:noreply, state}
   end
 
 end
