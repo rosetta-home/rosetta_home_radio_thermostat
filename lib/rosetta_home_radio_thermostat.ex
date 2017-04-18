@@ -159,19 +159,14 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
 end
 
 defmodule Cicada.DeviceManager.Discovery.HVAC.RadioThermostat do
-  use Cicada.DeviceManager.Discovery
   require Logger
   alias Cicada.DeviceManager.Device.HVAC
+  use Cicada.DeviceManager.Discovery, module: HVAC.RadioThermostat
 
   def register_callbacks do
     Logger.info "Starting RadioThermostat Listener"
-    Process.send_after(self(), :register, 0)
-    HVAC.RadioThermostat
-  end
-
-  def handle_info(:register, state) do
-    SSDP.register()
-    {:noreply, state}
+    SSDP.register
+    %{}
   end
 
   def handle_info({:device, %{device: %{device_type: "com.marvell.wm.system:1.0"}} = device}, state) do
