@@ -80,7 +80,6 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   def init({id, device}) do
     {:ok, pid} = RadioThermostat.start_link(device.url)
     Process.send_after(self(), :update_state, 0)
-    #Process.send_after(self, :broadcast_state, 0)
     r_state = RadioThermostat.state(pid) |> map_state
     {:ok, %DeviceManager.Device{
       module: RadioThermostat,
@@ -95,15 +94,8 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   def handle_info(:update_state, device) do
     device = %DeviceManager.Device{device | state:
       RadioThermostat.state(device.device_pid) |> map_state
-    }
-    Process.send_after(self(), :update_state, 60000)
-    device |> DeviceManager.dispatch
-    {:noreply, device}
-  end
-
-  def handle_info(:broadcast_state, device) do
-    device |> DeviceManager.dispatch
-    Process.send_after(self(), :broadcast_state, 1000)
+    } |> DeviceManager.dispatch
+    Process.send_after(self(), :update_state, 13000)
     {:noreply, device}
   end
 
