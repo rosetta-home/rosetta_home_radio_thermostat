@@ -17,7 +17,7 @@ defmodule RosettaHomeRadioThermostat.Mixfile do
   defp deps do
     [
       {:radio_thermostat, github: "NationalAssociationOfRealtors/radio_thermostat"},
-      {:ssdp, "~> 0.1.5"},
+      {:ssdp, "~> 0.1.6"},
       {:cicada, github: "rosetta-home/cicada", optional: true},
     ]
   end
