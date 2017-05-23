@@ -92,11 +92,23 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   end
 
   def handle_info(:update_state, device) do
-    device = %DeviceManager.Device{device | state:
-      RadioThermostat.state(device.device_pid) |> map_state
-    } |> DeviceManager.dispatch
+    device_now = RadioThermostat.state(device.device_pid) |> map_state
+    now = :erlang.monotonic_time(:seconds)
+    current_state = device.state.state
+    last_update = device.state.last_update
+    {last_update, elapsed} =
+      case device_now.state do
+        current_state when last_update == 0 -> {now, 0}
+        current_state -> {now, device.state.elapsed + (now - device.state.last_update)}
+        _ -> {now, 0}
+      end
     Process.send_after(self(), :update_state, 13000)
-    {:noreply, device}
+    {:noreply, %DeviceManager.Device{device |
+      state: %DeviceManager.Device.HVAC.State{device_now |
+        last_update: last_update,
+        elapsed: elapsed
+      }
+    } |> DeviceManager.dispatch}
   end
 
   def handle_call({:update, _state}, _from, device) do
