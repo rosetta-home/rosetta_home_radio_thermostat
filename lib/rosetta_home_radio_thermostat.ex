@@ -90,7 +90,7 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
     Process.send_after(self(), :update_state, 0)
     r_state = RadioThermostat.state(pid) |> map_state
     {:ok, %DeviceManager.Device{
-      module: RadioThermostat,
+      module: __MODULE__,
       type: :hvac,
       device_pid: pid,
       interface_pid: id,
