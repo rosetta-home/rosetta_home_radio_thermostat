@@ -9,11 +9,19 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   end
 
   def fan_on(pid) do
-    GenServer.call(pid, :on)
+    GenServer.call(pid, :fan_on)
   end
 
   def fan_off(pid) do
-    GenServer.call(pid, :off)
+    GenServer.call(pid, :fan_off)
+  end
+
+  def hold_on(pid) do
+    GenServer.call(pid, :hold_on)
+  end
+
+  def hold_off(pid) do
+    GenServer.call(pid, :hold_off)
   end
 
   @spec set_temp(pid, number) :: boolean
@@ -119,28 +127,20 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
     {:reply, device, device}
   end
 
-  def handle_call(:on, _from, device) do
-    {:reply,
-      case RadioThermostat.set(device.device_pid, :fan, 1) do
-        {:ok, %{"success": 0}} ->
-          Process.send_after(self(), :update_state, 0)
-          true
-        other ->
-          IO.inspect other
-          false
-      end, device}
+  def handle_call(:fan_on, _from, device) do
+    {:reply, :fan |> do_call(:on, device), device}
   end
 
-  def handle_call(:off, _from, device) do
-    {:reply,
-      case RadioThermostat.set(device.device_pid, :fan, 0) do
-        {:ok, %{"success": 0}} ->
-          Process.send_after(self(), :update_state, 0)
-          true
-        other ->
-          IO.inspect other
-          false
-      end, device}
+  def handle_call(:fan_off, _from, device) do
+    {:reply, :fan |> do_call(:off, device), device}
+  end
+
+  def handle_call(:hold_on, _from, device) do
+    {:reply, :hold |> do_call(:on, device), device}
+  end
+
+  def handle_call(:hold_off, _from, device) do
+    {:reply, :hold |> do_call(:off, device), device}
   end
 
   def handle_call({:set_temp, temp}, _from, device) do
@@ -160,6 +160,16 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
     {:reply, :ok, device}
   end
 
+  defp do_call(resource, state, device) do
+    case RadioThermostat.set(device.device_pid, resource, state) do
+      {:ok, %{"success": 0}} ->
+        Process.send_after(self(), :update_state, 0)
+        true
+      other ->
+        IO.inspect other
+        false
+    end
+  end
 end
 
 defmodule Cicada.DeviceManager.Discovery.HVAC.RadioThermostat do
