@@ -100,7 +100,11 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   end
 
   def handle_info(:update_state, device) do
-    device_now = RadioThermostat.state(device.device_pid) |> map_state
+    device_now =
+      case RadioThermostat.state(device.device_pid) do
+        {:ok, state} -> {:ok, state} |> map_state
+        {:error, _error} -> device
+      end
     now = :erlang.monotonic_time(:seconds)
     current_state = device.state.state
     last_update = device.state.last_update
