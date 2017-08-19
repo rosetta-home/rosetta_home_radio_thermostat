@@ -88,24 +88,25 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
   def init({id, device}) do
     {:ok, pid} = RadioThermostat.start_link(device.url)
     Process.send_after(self(), :update_state, 0)
-    r_state = RadioThermostat.state(pid) |> map_state
     {:ok, %DeviceManager.Device{
       module: __MODULE__,
       type: :hvac,
       device_pid: pid,
       interface_pid: id,
       name: device.device.friendly_name,
-      state: r_state
+      state: %DeviceManager.Device.HVAC.State{}
     }}
   end
 
   def handle_info(:update_state, device) do
-    device_now =
-      case RadioThermostat.state(device.device_pid) do
-        {:ok, state} -> {:ok, state} |> map_state
-        {:error, _error} -> device
-      end
+    RadioThermostat.state(device.device_pid)
+    Process.send_after(self(), :update_state, 10_000)
+    {:noreply, device}
+  end
+
+  def handle_info({:state, :ok, state}, device) do
     now = :erlang.monotonic_time(:seconds)
+    device_now = {:ok, state} |> map_state()
     current_state = device.state.state
     last_update = device.state.last_update
     {last_update, elapsed} =
@@ -114,13 +115,22 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
         current_state -> {now, device.state.elapsed + (now - device.state.last_update)}
         _ -> {now, 0}
       end
-    Process.send_after(self(), :update_state, 13000)
     {:noreply, %DeviceManager.Device{device |
       state: %DeviceManager.Device.HVAC.State{device_now |
         last_update: last_update,
         elapsed: elapsed
       }
     } |> DeviceManager.dispatch}
+  end
+
+  def handle_info({resource, :ok, resp}, state) do
+    Logger.debug("#{resource} ok: #{inspect resp}")
+    {:noreply, state}
+  end
+
+  def handle_info({resource, :error, reason}, state) do
+    Logger.error("#{resource} error: #{inspect reason}")
+    {:noreply, state}
   end
 
   def handle_call({:update, _state}, _from, device) do
@@ -160,19 +170,11 @@ defmodule Cicada.DeviceManager.Device.HVAC.RadioThermostat do
           false -> RadioThermostat.set(device.device_pid, :temporary_heat, temp)
         end
     end
-    Process.send_after(self(), :update_state, 1000)
     {:reply, :ok, device}
   end
 
   defp do_call(resource, state, device) do
-    case RadioThermostat.set(device.device_pid, resource, state) do
-      {:ok, %{"success": 0}} ->
-        Process.send_after(self(), :update_state, 0)
-        true
-      other ->
-        IO.inspect other
-        false
-    end
+    RadioThermostat.set(device.device_pid, resource, state)
   end
 end
 
